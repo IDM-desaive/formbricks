@@ -7,6 +7,8 @@ import { getPersonCached } from "@formbricks/lib/services/person";
 import { ZJsPeopleAttributeInput } from "@formbricks/types/v1/js";
 import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
+import { getSessionCached, updateSessionTransientPerson } from "@formbricks/lib/services/session";
+import { invalidateSurveys } from "@/app/api/v1/js/surveys";
 
 export async function OPTIONS(): Promise<NextResponse> {
   return responses.successResponse({}, true);
@@ -30,12 +32,6 @@ export async function POST(req: Request, { params }): Promise<NextResponse> {
 
     const { environmentId, sessionId, key, value } = inputValidation.data;
 
-    const existingPerson = await getPersonCached(personId);
-
-    if (!existingPerson) {
-      return responses.notFoundResponse("Person", personId, true);
-    }
-
     let attributeClass = await getAttributeClassByNameCached(environmentId, key);
 
     // create new attribute class if not found
@@ -45,6 +41,23 @@ export async function POST(req: Request, { params }): Promise<NextResponse> {
 
     if (!attributeClass) {
       return responses.internalServerErrorResponse("Unable to create attribute class", true);
+    }
+
+    const existingPerson = await getPersonCached(personId);
+
+    if (!existingPerson) {
+      let session = await getSessionCached(sessionId);
+      if (session && session.transPerson) {
+        session.transPerson.attributes[key] = value;
+        session = await updateSessionTransientPerson(sessionId, session.transPerson);
+        session = await getSessionCached(sessionId);
+        invalidateSurveys(environmentId, session!.transPerson!);
+      }
+      const state = await getUpdatedState(environmentId, personId, sessionId);
+      if (session) {
+        state.session = session;
+      }
+      return responses.successResponse({ ...state }, true);
     }
 
     // upsert attribute (update or create)

@@ -1,11 +1,13 @@
 import z from "zod";
+import { ZPerson } from "./people";
 
 export const ZSession = z.object({
   id: z.string().cuid2(),
   createdAt: z.date(),
   updatedAt: z.date(),
   expiresAt: z.date(),
-  personId: z.string().cuid2(),
+  personId: z.string().cuid2().nullable(),
+  transPerson: ZPerson.nullable(),
 });
 
 export type TSession = z.infer<typeof ZSession>;

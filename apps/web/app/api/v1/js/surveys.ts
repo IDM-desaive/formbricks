@@ -2,7 +2,7 @@ import { prisma } from "@formbricks/database";
 import { selectSurvey } from "@formbricks/lib/services/survey";
 import { TPerson } from "@formbricks/types/v1/people";
 import { TSurvey } from "@formbricks/types/v1/surveys";
-import { unstable_cache } from "next/cache";
+import { revalidateTag, unstable_cache } from "next/cache";
 
 const getSurveysCacheTags = (environmentId: string, personId: string): string[] => [
   `env-${environmentId}-surveys`,
@@ -25,6 +25,15 @@ export const getSurveysCached = (environmentId: string, person: TPerson) =>
       revalidate: 30 * 60,
     }
   )();
+
+export const invalidateSurveys = (environmentId: string, person: TPerson) => {
+  for (let tag of getSurveysCacheKey(environmentId, person.id)) {
+    revalidateTag(tag);
+  }
+  for (let tag of getSurveysCacheTags(environmentId, person.id)) {
+    revalidateTag(tag);
+  }
+};
 
 export const getSurveys = async (environmentId: string, person: TPerson): Promise<TSurvey[]> => {
   // get recontactDays from product
@@ -172,5 +181,6 @@ export const getSurveys = async (environmentId: string, person: TPerson): Promis
       })),
     }));
 
+  console.log("getSurveys returned " + surveys.length + " surveys.");
   return surveys;
 };
