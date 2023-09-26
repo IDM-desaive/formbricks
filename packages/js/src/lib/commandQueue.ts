@@ -38,18 +38,21 @@ export class CommandQueue {
       const errorHandler = ErrorHandler.getInstance();
       const currentItem = this.queue.shift();
 
-      // make sure formbricks is initialized
-      if (currentItem.checkInitialized) {
-        const initResult = checkInitialized();
+      if (currentItem) {
+        // make sure formbricks is initialized
+        if (currentItem.checkInitialized) {
+          const initResult = checkInitialized();
 
-        if (initResult && initResult.ok !== true) errorHandler.handle(initResult.error);
+          if (initResult && initResult.ok !== true) errorHandler.handle(initResult.error);
+        }
+
+        // @ts-ignore
+        const result = (await currentItem.command.apply(null, currentItem.commandArgs)) as Result<void, any>;
+
+        if (!result) continue;
+
+        if (result.ok !== true) errorHandler.handle(result.error);
       }
-
-      const result = (await currentItem.command.apply(null, currentItem.commandArgs)) as Result<void, any>;
-
-      if (!result) continue;
-
-      if (result.ok !== true) errorHandler.handle(result.error);
     }
     this.running = false;
     if (this.resolvePromise) {

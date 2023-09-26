@@ -1,6 +1,4 @@
 import { TJsPeopleAttributeInput, TJsPeopleUserIdInput, TJsState } from "@formbricks/types/v1/js";
-import type { Person } from "../../../types/js";
-import type { Session, Settings } from "../../../types/js";
 import { Config } from "./config";
 import {
   AttributeAlreadyExistsError,
@@ -169,6 +167,7 @@ export const setPersonAttribute = async (
     }
   );
 
+  // @ts-ignore
   if (error) {
     return err(error);
   }
@@ -190,6 +189,7 @@ export const resetPerson = async (): Promise<Result<void, NetworkError>> => {
     await sync();
     return okVoid();
   } catch (e) {
+    // @ts-ignore
     return err(e);
   }
 };

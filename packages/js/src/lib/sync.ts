@@ -3,6 +3,7 @@ import { trackAction } from "./actions";
 import { Config } from "./config";
 import { NetworkError, Result, err, ok } from "./errors";
 import { Logger } from "./logger";
+// @ts-ignore
 import packageJson from "../../package.json";
 
 const config = Config.getInstance();
@@ -23,6 +24,8 @@ const syncWithBackend = async (): Promise<Result<TJsState, NetworkError>> => {
       personId: config.get().state?.person.id,
       sessionId: config.get().state?.session.id,
       jsVersion: packageJson.version,
+      userId: config.get().userId,
+      userAttributes: config.get().userAttributes,
     }),
   });
   if (!response.ok) {

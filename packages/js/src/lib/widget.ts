@@ -1,5 +1,6 @@
 import { createDisplay } from "@formbricks/lib/client/display";
 import { ResponseQueue } from "@formbricks/lib/responseQueue";
+// @ts-ignore
 import { renderSurveyModal } from "@formbricks/surveys";
 import { TResponseUpdate } from "@formbricks/types/v1/responses";
 import type { TSurvey } from "../../../types/v1/surveys";
@@ -70,6 +71,7 @@ export const renderWidget = (survey: TSurvey) => {
 
 export const closeSurvey = async (): Promise<void> => {
   // remove container element from DOM
+  // @ts-ignore
   document.getElementById(containerId).remove();
   addWidgetContainer();
 

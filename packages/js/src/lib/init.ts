@@ -90,7 +90,13 @@ export const initialize = async (
   } else {
     logger.debug("No valid configuration found. Creating new config.");
     // we need new config
-    config.update({ environmentId: c.environmentId, apiHost: c.apiHost, state: undefined });
+    config.update({
+      environmentId: c.environmentId,
+      apiHost: c.apiHost,
+      state: undefined,
+      userId: c.userId,
+      userAttributes: c.userAttributes,
+    });
 
     logger.debug("Syncing.");
     await sync();

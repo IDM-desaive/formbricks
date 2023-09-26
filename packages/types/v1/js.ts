@@ -20,6 +20,8 @@ export const ZJsSyncInput = z.object({
   personId: z.string().cuid2().optional(),
   sessionId: z.string().cuid2().optional(),
   jsVersion: z.string().optional(),
+  userId: z.string().cuid2().optional(),
+  userAttributes: z.any().optional(),
 });
 
 export type TJsSyncInput = z.infer<typeof ZJsSyncInput>;
@@ -28,6 +30,8 @@ export const ZJsConfig = z.object({
   environmentId: z.string().cuid2(),
   apiHost: z.string(),
   state: ZJsState,
+  userId: z.string().cuid2().nullable(),
+  userAttributes: z.any().nullable(),
 });
 
 export type TJsConfig = z.infer<typeof ZJsConfig>;

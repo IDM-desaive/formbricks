@@ -54,6 +54,7 @@ export const wrapThrows =
     } catch (error) {
       return {
         ok: false,
+        // @ts-ignore
         error,
       };
     }

@@ -222,3 +222,15 @@ export const extendSession = async (sessionId: string): Promise<TSession> => {
     throw error;
   }
 };
+
+export const getSessionByTransientPersonId = async (personId: string): Promise<TSession | null> => {
+  return await prisma.session.findFirst({
+    where: {
+      transPerson: {
+        path: ["id"],
+        equals: personId,
+      },
+    },
+    select,
+  });
+};

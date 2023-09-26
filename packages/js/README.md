@@ -34,3 +34,14 @@ if (typeof window !== "undefined") {
 Replace your-environment-id with your actual environment ID. You can find your environment ID in the **Setup Checklist** in the Formbricks settings.
 
 For more detailed guides for different frameworks, check out our [Next.js](https://formbricks.com/docs/getting-started/nextjs) and [Vue.js](https://formbricks.com/docs/getting-started/vuejs) guides.
+
+## Building the Javascript library
+
+```shell
+pnpm build
+```
+
+### Building the umd module
+```shell
+npx microbundle
+```
