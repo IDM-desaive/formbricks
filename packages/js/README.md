@@ -27,6 +27,10 @@ if (typeof window !== "undefined") {
   formbricks.init({
     environmentId: "your-environment-id",
     apiHost: "https://app.formbricks.com",
+    userId: "your-user-id", // Optional, the user ID.
+    userAttributes: {
+        "name": "value"
+    }, // Optional, sets the user attributes during init.
   });
 }
 ```
@@ -36,7 +40,7 @@ Replace your-environment-id with your actual environment ID. You can find your e
 For more detailed guides for different frameworks, check out our [Next.js](https://formbricks.com/docs/getting-started/nextjs) and [Vue.js](https://formbricks.com/docs/getting-started/vuejs) guides.
 
 ## Building the Javascript library
-
+In order to be able to use the Javascript library during development, you need to build the umd file.
 ```shell
 pnpm build
 ```
