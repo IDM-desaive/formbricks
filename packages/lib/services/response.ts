@@ -12,11 +12,10 @@ import { TTag } from "@formbricks/types/v1/tags";
 import { Prisma } from "@prisma/client";
 import { cache } from "react";
 import "server-only";
-import { createPersonWithId, getOrCreatePersonByUserId, getPerson, transformPrismaPerson } from "./person";
+import { getPerson, transformPrismaPerson } from "./person";
 import { captureTelemetry } from "../telemetry";
 import { validateInputs } from "../utils/validate";
 import { ZId } from "@formbricks/types/v1/environment";
-import { getSessionByTransientPersonId } from "./session";
 
 const responseSelection = {
   id: true,

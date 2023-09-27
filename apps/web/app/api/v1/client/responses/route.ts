@@ -64,7 +64,7 @@ export async function POST(request: Request): Promise<NextResponse> {
           person = await createPersonWithId(survey.environmentId, session.transPerson.id);
           if (session.transPerson.attributes) {
             for (let key in session.transPerson.attributes) {
-              const value = session.transPerson.attributes[key];
+              const value = "" + session.transPerson.attributes[key];
               await setUserAttribute(survey.environmentId, session.id, person.id, key, value, false);
             }
           }
