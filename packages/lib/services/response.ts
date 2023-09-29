@@ -127,10 +127,10 @@ export const createResponse = async (responseInput: Partial<TResponseInput>): Pr
         },
         finished: responseInput.finished,
         data: responseInput.data,
-        ...(responseInput.personId && {
+        ...(person && {
           person: {
             connect: {
-              id: responseInput.personId,
+              id: person?.id,
             },
           },
           personAttributes: person?.attributes,

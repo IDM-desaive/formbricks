@@ -158,6 +158,38 @@ export const createPerson = async (environmentId: string): Promise<TPerson> => {
   }
 };
 
+export const createPersonWithId = async (environmentId: string, id: string): Promise<TPerson> => {
+  validateInputs([environmentId, ZId]);
+  try {
+    const personPrisma = await prisma.person.create({
+      data: {
+        id: id,
+        environment: {
+          connect: {
+            id: environmentId,
+          },
+        },
+      },
+      select: selectPerson,
+    });
+
+    const person = transformPrismaPerson(personPrisma);
+
+    if (person) {
+      // revalidate person
+      revalidateTag(person.id);
+    }
+
+    return person;
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      throw new DatabaseError(error.message);
+    }
+
+    throw error;
+  }
+};
+
 export const deletePerson = async (personId: string): Promise<void> => {
   validateInputs([personId, ZId]);
   try {

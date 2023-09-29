@@ -27,7 +27,10 @@ export const checkPageUrl = async (): Promise<Result<void, InvalidMatchTypeError
 
   for (const event of pageUrlEvents) {
     const {
-      noCodeConfig: { pageUrl },
+      noCodeConfig: {
+        // @ts-ignore
+        pageUrl,
+      },
     } = event;
     if (!pageUrl) {
       continue;
@@ -107,10 +110,12 @@ export function checkUrlMatch(
       });
   }
 
+  // @ts-ignore
   if (error) {
     return error;
   }
 
+  // @ts-ignore
   return ok(result);
 }
 
@@ -143,6 +148,7 @@ export const checkClickMatch = (event: MouseEvent) => {
       }
     }
     if (pageUrl) {
+      // @ts-ignore
       const urlMatch = checkUrlMatch(window.location.href, pageUrl, action.noCodeConfig?.pageUrl?.rule);
       if (!urlMatch.ok || !urlMatch.value) {
         return;

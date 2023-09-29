@@ -2,7 +2,12 @@ import { getSurveysCached } from "@/app/api/v1/js/surveys";
 import { MAU_LIMIT } from "@formbricks/lib/constants";
 import { getActionClassesCached } from "@formbricks/lib/services/actionClass";
 import { getEnvironmentCached } from "@formbricks/lib/services/environment";
-import { createPerson, getMonthlyActivePeopleCount, getPersonCached } from "@formbricks/lib/services/person";
+import {
+  createPerson,
+  getMonthlyActivePeopleCount,
+  getOrCreatePersonByUserId,
+  getPersonCached,
+} from "@formbricks/lib/services/person";
 import { getProductByEnvironmentIdCached } from "@formbricks/lib/services/product";
 import { createSession, extendSession, getSessionCached } from "@formbricks/lib/services/session";
 import { captureTelemetry } from "@formbricks/lib/telemetry";
@@ -10,6 +15,11 @@ import { TEnvironment } from "@formbricks/types/v1/environment";
 import { TJsState } from "@formbricks/types/v1/js";
 import { TPerson } from "@formbricks/types/v1/people";
 import { TSession } from "@formbricks/types/v1/sessions";
+import cuid2 from "@paralleldrive/cuid2";
+import {
+  setUserAttribute,
+  upsertUserAttribute,
+} from "@/app/api/v1/js/people/[personId]/set-attribute/lib/set-attribute";
 
 const captureNewSessionTelemetry = async (jsVersion?: string): Promise<void> => {
   await captureTelemetry("session created", { jsVersion: jsVersion ?? "unknown" });
@@ -19,11 +29,13 @@ export const getUpdatedState = async (
   environmentId: string,
   personId?: string,
   sessionId?: string,
-  jsVersion?: string
+  jsVersion?: string,
+  userId?: string | null,
+  userAttributes?: any
 ): Promise<TJsState> => {
   let environment: TEnvironment | null;
   let person: TPerson;
-  let session: TSession | null;
+  let session: TSession | null = null;
 
   // check if environment exists
   environment = await getEnvironmentCached(environmentId);
@@ -33,7 +45,13 @@ export const getUpdatedState = async (
   }
 
   // check if Monthly Active Users limit is reached
-  const currentMau = await getMonthlyActivePeopleCount(environmentId);
+  let currentMau = 0;
+  try {
+    currentMau = await getMonthlyActivePeopleCount(environmentId);
+  } catch (e) {
+    console.error("Failed to retrieve mau", e);
+  }
+
   const isMauLimitReached = currentMau >= MAU_LIMIT;
   if (isMauLimitReached) {
     const errorMessage = `Monthly Active Users limit reached in ${environmentId} (${currentMau}/${MAU_LIMIT})`;
@@ -54,36 +72,86 @@ export const getUpdatedState = async (
     }
   }
 
+  // 1st create the person (either in the database or in the session)
   if (!personId) {
-    // create a new person
-    person = await createPerson(environmentId);
-    // create a new session
-    session = await createSession(person.id);
+    if (userId) {
+      console.log("User id provided, retrieving or creating person for " + userId);
+      person = await getOrCreatePersonByUserId(userId, environmentId);
+      if (userAttributes) {
+        for (let key in userAttributes) {
+          person.attributes[key] = userAttributes[key];
+          await upsertUserAttribute(environmentId, person.id, key, userAttributes[key]);
+        }
+      }
+    } else {
+      console.log("Creating transient person");
+      let personId = userId ? userId : cuid2.createId();
+      person = { id: personId, updatedAt: new Date(), createdAt: new Date(), attributes: {} };
+      // create a new session
+      session = await createSession(null, person);
+      sessionId = session.id;
+      if (userAttributes) {
+        for (const key in userAttributes) {
+          person.attributes[key] = userAttributes[key];
+          await setUserAttribute(environmentId, sessionId, personId, key, userAttributes[key], false);
+        }
+      }
+    }
   } else {
     // check if person exists
     const existingPerson = await getPersonCached(personId);
     if (!existingPerson) {
-      // create a new person
-      person = await createPerson(environmentId);
+      if (sessionId) {
+        console.log("Fetching cached user state");
+        session = await getSessionCached(sessionId);
+        person = session?.transPerson ?? (await createPerson(environmentId));
+      } else {
+        console.log("creating new person");
+        person = await createPerson(environmentId);
+        session = await createSession(person.id, null);
+        sessionId = session.id;
+      }
+      if (userAttributes && session) {
+        for (const key in userAttributes) {
+          await setUserAttribute(environmentId, session.id, person.id, key, userAttributes[key], false);
+        }
+      }
     } else {
       person = existingPerson;
+      if (userAttributes && sessionId) {
+        for (const key in userAttributes) {
+          await setUserAttribute(environmentId, sessionId, person.id, key, userAttributes[key], false);
+        }
+      }
     }
   }
+
   if (!sessionId) {
     // create a new session
-    session = await createSession(person.id);
+    session = await createSession(person.id, null);
   } else {
     // check validity of person & session
-    session = await getSessionCached(sessionId);
+    session = await getSessionCached(sessionId!);
     if (!session) {
       // create a new session
-      session = await createSession(person.id);
+      let existingPerson = await getPersonCached(person.id);
+      if (existingPerson) {
+        session = await createSession(person.id, null);
+      } else {
+        session = await createSession(null, person);
+      }
       captureNewSessionTelemetry(jsVersion);
     } else {
+      let existingPerson = await getPersonCached(person.id);
+
       // check if session is expired
       if (session.expiresAt < new Date()) {
         // create a new session
-        session = await createSession(person.id);
+        if (existingPerson) {
+          session = await createSession(person.id, null);
+        } else {
+          session = await createSession(null, person);
+        }
         captureNewSessionTelemetry(jsVersion);
       } else {
         // extend session (if about to expire)
@@ -91,7 +159,7 @@ export const getUpdatedState = async (
           new Date(session.expiresAt).getTime() - new Date().getTime() < 1000 * 60 * 10;
 
         if (isSessionAboutToExpire) {
-          session = await extendSession(sessionId);
+          session = await extendSession(sessionId!);
         }
       }
     }

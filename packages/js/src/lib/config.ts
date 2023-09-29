@@ -49,7 +49,9 @@ export class Config {
       }
     }
     return {
+      // @ts-ignore
       apiHost: null,
+      // @ts-ignore
       environmentId: null,
     };
   }

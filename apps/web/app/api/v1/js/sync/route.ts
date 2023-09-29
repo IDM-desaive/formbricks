@@ -23,9 +23,16 @@ export async function POST(req: Request): Promise<NextResponse> {
       );
     }
 
-    const { environmentId, personId, sessionId } = inputValidation.data;
+    const { environmentId, personId, sessionId, userId, userAttributes } = inputValidation.data;
 
-    const state = await getUpdatedState(environmentId, personId, sessionId, inputValidation.data.jsVersion);
+    const state = await getUpdatedState(
+      environmentId,
+      personId,
+      sessionId,
+      inputValidation.data.jsVersion,
+      userId,
+      userAttributes
+    );
 
     return responses.successResponse({ ...state }, true);
   } catch (error) {

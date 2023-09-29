@@ -7,6 +7,7 @@ import { getSurvey } from "@formbricks/lib/services/survey";
 import { getTeamDetails } from "@formbricks/lib/services/teamDetails";
 import { TDisplay, ZDisplayInput } from "@formbricks/types/v1/displays";
 import { NextResponse } from "next/server";
+import { getPersonCached } from "@formbricks/lib/services/person";
 
 export async function OPTIONS(): Promise<NextResponse> {
   return responses.successResponse({}, true);
@@ -45,6 +46,13 @@ export async function POST(request: Request): Promise<NextResponse> {
   // create display
   let display: TDisplay;
   try {
+    if (displayInput.personId) {
+      let person = await getPersonCached(displayInput.personId);
+      if (!person) {
+        console.log("removing person from displayInput");
+        displayInput.personId = undefined;
+      }
+    }
     display = await createDisplay(displayInput);
   } catch (error) {
     if (error instanceof InvalidInputError) {

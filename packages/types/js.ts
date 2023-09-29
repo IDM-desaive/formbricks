@@ -43,6 +43,8 @@ export interface InitConfig {
   apiHost: string;
   debug?: boolean;
   errorHandler?: ErrorHandler;
+  userId?: string;
+  userAttributes?: any;
 }
 
 //TODO: add type to error

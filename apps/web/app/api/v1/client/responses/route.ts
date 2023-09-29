@@ -9,6 +9,9 @@ import { getTeamDetails } from "@formbricks/lib/services/teamDetails";
 import { TResponse, TResponseInput, ZResponseInput } from "@formbricks/types/v1/responses";
 import { NextResponse } from "next/server";
 import { UAParser } from "ua-parser-js";
+import { createPersonWithId, getPerson } from "@formbricks/lib/services/person";
+import { getSessionByTransientPersonId } from "@formbricks/lib/services/session";
+import { setUserAttribute } from "@/app/api/v1/js/people/[personId]/set-attribute/lib/set-attribute";
 
 export async function OPTIONS(): Promise<NextResponse> {
   return responses.successResponse({}, true);
@@ -51,6 +54,23 @@ export async function POST(request: Request): Promise<NextResponse> {
         os: agent?.os.name,
       },
     };
+
+    if (responseInput.personId) {
+      let person = await getPerson(responseInput.personId);
+      if (person == null) {
+        console.log("Persisting person " + responseInput.personId);
+        const session = await getSessionByTransientPersonId(responseInput.personId);
+        if (session && session.transPerson) {
+          person = await createPersonWithId(survey.environmentId, session.transPerson.id);
+          if (session.transPerson.attributes) {
+            for (let key in session.transPerson.attributes) {
+              const value = "" + session.transPerson.attributes[key];
+              await setUserAttribute(survey.environmentId, session.id, person.id, key, value, false);
+            }
+          }
+        }
+      }
+    }
 
     response = await createResponse({
       ...responseInput,
