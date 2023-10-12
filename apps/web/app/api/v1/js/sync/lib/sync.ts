@@ -1,15 +1,15 @@
-import { getSurveysCached } from "@/app/api/v1/js/surveys";
+import { getSurveysCached } from "@/app/api/v1/js/sync/lib/surveys";
 import { MAU_LIMIT } from "@formbricks/lib/constants";
-import { getActionClassesCached } from "@formbricks/lib/services/actionClass";
-import { getEnvironmentCached } from "@formbricks/lib/services/environment";
+import { getActionClasses } from "@formbricks/lib/actionClass/service";
+import { getEnvironment } from "@formbricks/lib/environment/service";
 import {
   createPerson,
   getMonthlyActivePeopleCount,
-  getOrCreatePersonByUserId,
   getPersonCached,
-} from "@formbricks/lib/services/person";
-import { getProductByEnvironmentIdCached } from "@formbricks/lib/services/product";
-import { createSession, extendSession, getSessionCached } from "@formbricks/lib/services/session";
+  getOrCreatePersonByUserId,
+} from "@formbricks/lib/person/service";
+import { getProductByEnvironmentIdCached } from "@formbricks/lib/product/service";
+import { createSession, extendSession, getSessionCached } from "@formbricks/lib/session/service";
 import { captureTelemetry } from "@formbricks/lib/telemetry";
 import { TEnvironment } from "@formbricks/types/v1/environment";
 import { TJsState } from "@formbricks/types/v1/js";
@@ -38,7 +38,7 @@ export const getUpdatedState = async (
   let session: TSession | null = null;
 
   // check if environment exists
-  environment = await getEnvironmentCached(environmentId);
+  environment = await getEnvironment(environmentId);
 
   if (!environment) {
     throw new Error("Environment does not exist");
@@ -86,7 +86,13 @@ export const getUpdatedState = async (
     } else {
       console.log("Creating transient person");
       let personId = userId ? userId : cuid2.createId();
-      person = { id: personId, updatedAt: new Date(), createdAt: new Date(), attributes: {} };
+      person = {
+        id: personId,
+        updatedAt: new Date(),
+        createdAt: new Date(),
+        attributes: {},
+        environmentId: environmentId,
+      };
       // create a new session
       session = await createSession(null, person);
       sessionId = session.id;
@@ -169,7 +175,7 @@ export const getUpdatedState = async (
   // get/create rest of the state
   const [surveys, noCodeActionClasses, product] = await Promise.all([
     getSurveysCached(environmentId, person),
-    getActionClassesCached(environmentId),
+    getActionClasses(environmentId),
     getProductByEnvironmentIdCached(environmentId),
   ]);
 

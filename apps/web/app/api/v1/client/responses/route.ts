@@ -3,14 +3,14 @@ import { transformErrorToDetails } from "@/lib/api/validator";
 import { sendToPipeline } from "@/lib/pipelines";
 import { InvalidInputError } from "@formbricks/types/v1/errors";
 import { capturePosthogEvent } from "@formbricks/lib/posthogServer";
-import { createResponse } from "@formbricks/lib/services/response";
-import { getSurvey } from "@formbricks/lib/services/survey";
-import { getTeamDetails } from "@formbricks/lib/services/teamDetails";
+import { getSurvey } from "@formbricks/lib/survey/service";
+import { createResponse } from "@formbricks/lib/response/service";
+import { getTeamDetails } from "@formbricks/lib/teamDetail/service";
 import { TResponse, TResponseInput, ZResponseInput } from "@formbricks/types/v1/responses";
 import { NextResponse } from "next/server";
 import { UAParser } from "ua-parser-js";
-import { createPersonWithId, getPerson } from "@formbricks/lib/services/person";
-import { getSessionByTransientPersonId } from "@formbricks/lib/services/session";
+import { createPersonWithId, getPerson } from "@formbricks/lib/person/service";
+import { getSessionByTransientPersonId } from "@formbricks/lib/session/service";
 import { setUserAttribute } from "@/app/api/v1/js/people/[personId]/set-attribute/lib/set-attribute";
 
 export async function OPTIONS(): Promise<NextResponse> {

@@ -2,12 +2,12 @@ import { responses } from "@/lib/api/response";
 import { transformErrorToDetails } from "@/lib/api/validator";
 import { InvalidInputError } from "@formbricks/types/v1/errors";
 import { capturePosthogEvent } from "@formbricks/lib/posthogServer";
-import { createDisplay } from "@formbricks/lib/services/displays";
-import { getSurvey } from "@formbricks/lib/services/survey";
-import { getTeamDetails } from "@formbricks/lib/services/teamDetails";
+import { createDisplay } from "@formbricks/lib/display/service";
+import { getSurvey } from "@formbricks/lib/survey/service";
+import { getTeamDetails } from "@formbricks/lib/teamDetail/service";
 import { TDisplay, ZDisplayInput } from "@formbricks/types/v1/displays";
 import { NextResponse } from "next/server";
-import { getPersonCached } from "@formbricks/lib/services/person";
+import { getPersonCached } from "@formbricks/lib/person/service";
 
 export async function OPTIONS(): Promise<NextResponse> {
   return responses.successResponse({}, true);
@@ -26,7 +26,6 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   const displayInput = inputValidation.data;
-
   // find environmentId from surveyId
   let survey;
 

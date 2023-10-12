@@ -103,7 +103,7 @@ export const initialize = async (
   }
 
   logger.debug("Adding event listeners");
-  addEventListeners();
+  addEventListeners(c.debug);
   addCleanupEventListeners();
 
   isInitialized = true;

@@ -1,20 +1,23 @@
 "use client";
 
 import { cn } from "@formbricks/lib/cn";
-import { DEFAULT_BRAND_COLOR } from "@formbricks/lib/constants";
 import { TProduct } from "@formbricks/types/v1/product";
-import { Button, ColorPicker, Label, Switch } from "@formbricks/ui";
+import { ColorPicker } from "@formbricks/ui/ColorPicker";
+import { Button } from "@formbricks/ui/Button";
+import { Switch } from "@formbricks/ui/Switch";
+import { Label } from "@formbricks/ui/Label";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { updateProductAction } from "./actions";
 
 interface EditHighlightBorderProps {
   product: TProduct;
+  defaultBrandColor: string;
 }
 
-export const EditHighlightBorder = ({ product }: EditHighlightBorderProps) => {
+export const EditHighlightBorder = ({ product, defaultBrandColor }: EditHighlightBorderProps) => {
   const [showHighlightBorder, setShowHighlightBorder] = useState(product.highlightBorderColor ? true : false);
-  const [color, setColor] = useState<string | null>(product.highlightBorderColor || DEFAULT_BRAND_COLOR);
+  const [color, setColor] = useState<string | null>(product.highlightBorderColor || defaultBrandColor);
   const [updatingBorder, setUpdatingBorder] = useState(false);
 
   const handleUpdateHighlightBorder = async () => {
@@ -32,7 +35,7 @@ export const EditHighlightBorder = ({ product }: EditHighlightBorderProps) => {
   const handleSwitch = (checked: boolean) => {
     if (checked) {
       if (!color) {
-        setColor(DEFAULT_BRAND_COLOR);
+        setColor(defaultBrandColor);
         setShowHighlightBorder(true);
       } else {
         setShowHighlightBorder(true);

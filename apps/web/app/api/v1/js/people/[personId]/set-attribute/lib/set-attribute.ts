@@ -1,7 +1,7 @@
-import { createAttributeClass, getAttributeClassByNameCached } from "@formbricks/lib/services/attributeClass";
-import { getPersonCached, updatePersonAttribute } from "@formbricks/lib/services/person";
-import { getSessionCached, updateSessionTransientPerson } from "@formbricks/lib/services/session";
-import { invalidateSurveys } from "@/app/api/v1/js/surveys";
+import { createAttributeClass, getAttributeClassByNameCached } from "@formbricks/lib/attributeClass/service";
+import { getPersonCached, updatePersonAttribute } from "@formbricks/lib/person/service";
+import { getSessionCached, updateSessionTransientPerson } from "@formbricks/lib/session/service";
+import { invalidateSurveys } from "@/app/api/v1/js/sync/lib/surveys";
 import { getUpdatedState } from "@/app/api/v1/js/sync/lib/sync";
 import { prisma } from "@formbricks/database";
 import { revalidateTag } from "next/cache";
