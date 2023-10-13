@@ -26,7 +26,7 @@ export const ZJsSyncInput = z.object({
   personId: z.string().cuid2().optional(),
   sessionId: z.string().cuid2().optional(),
   jsVersion: z.string().optional(),
-  userId: z.string().cuid2().optional(),
+  userId: z.string().optional(),
   userAttributes: z.any().optional(),
 });
 
