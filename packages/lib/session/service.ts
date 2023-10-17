@@ -11,6 +11,7 @@ import { validateInputs } from "../utils/validate";
 import { TPerson } from "@formbricks/types/v1/people";
 import { ZOptionalNumber } from "@formbricks/types/v1/common";
 import { ITEMS_PER_PAGE, SERVICES_REVALIDATION_INTERVAL } from "../constants";
+import { createAttributeClass, getAttributeClassByNameCached } from "../attributeClass/service";
 
 const getSessionCacheKey = (sessionId: string): string[] => [sessionId];
 
@@ -153,6 +154,16 @@ export const createSession = async (
       });
       console.log("session created");
 
+      if (transPerson.attributes) {
+        for (const key in transPerson.attributes) {
+          let attributeClass = await getAttributeClassByNameCached(transPerson.environmentId, key);
+
+          // create new attribute class if not found
+          if (attributeClass === null) {
+            attributeClass = await createAttributeClass(transPerson.environmentId, key, "code");
+          }
+        }
+      }
       if (session) {
         // revalidate session cache
         revalidateTag(session.id);

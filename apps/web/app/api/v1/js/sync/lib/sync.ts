@@ -93,15 +93,14 @@ export const getUpdatedState = async (
         attributes: {},
         environmentId: environmentId,
       };
-      // create a new session
-      session = await createSession(null, person);
-      sessionId = session.id;
       if (userAttributes) {
         for (const key in userAttributes) {
           person.attributes[key] = userAttributes[key];
-          await setUserAttribute(environmentId, sessionId, personId, key, userAttributes[key], false);
         }
       }
+      // create a new session
+      session = await createSession(null, person);
+      sessionId = session.id;
     }
   } else {
     // check if person exists
@@ -148,10 +147,9 @@ export const getUpdatedState = async (
       }
       captureNewSessionTelemetry(jsVersion);
     } else {
-      let existingPerson = await getPersonCached(person.id);
-
       // check if session is expired
       if (session.expiresAt < new Date()) {
+        let existingPerson = await getPersonCached(person.id);
         // create a new session
         if (existingPerson) {
           session = await createSession(person.id, null);
